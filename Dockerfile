@@ -1,12 +1,12 @@
 
-# Базовий образ з Java 17
-FROM eclipse-temurin:17-jdk-alpine
-
-# Встановлюємо робочу директорію всередині контейнера
+# Стадія 1: Збірка
+FROM maven:3.9.3-eclipse-temurin-17-alpine AS build
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Копіюємо зібраний JAR-файл в контейнер
-COPY target/*.jar app.jar
-
-# Команда, яка запускає Spring Boot сервер
+# Стадія 2: Запуск
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
